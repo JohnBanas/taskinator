@@ -53,8 +53,6 @@ var taskFormHandler = function(event){
   };
   //send as an argument to createTaskEl 
   createTaskEl(taskDataObj);
-  console.log(taskDataObj);
-  console.log(taskDataObj.status);
   }
 }
 
@@ -95,6 +93,7 @@ var createTaskEl = function(taskDataObj) {
 
   //increase task counter for the next unique id
   taskIdCounter++;
+  saveTasks();
 }
 
 
@@ -189,7 +188,7 @@ var taskButtonHandler = function(event) {
 //variable for function of deleting a created task
 var deleteTask = function(taskId) {
   //if the clicked button is a delete button the 
-  //taskId = that buttons "data-task-id" which also is the <li> id # as well
+  //taskId = that buttons "data-task-id" which also is the <li> id # as well (see side note #2)
   var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
   //actual command to remove the task
   taskSelected.remove();
@@ -206,14 +205,9 @@ var deleteTask = function(taskId) {
   }
   //reassign tasks array to be the dame as updatedTaskArray
   tasks = updatedTaskArray;
+  saveTasks();
 };
-  //by selecting a <li> that has a data-task-id equal to 
-  //the taskId passed in deleteTask function (which will equal 
-  //the button that was clicked, because of our "if" statement)
-  //this sets the var taskId =  to the .delete-btn that was clicked 
-  //or the "event.target.matches" (this will also be true for the editTask function)
-
-
+  
 
 var editTask = function(taskId) {
   //get task list element
@@ -230,9 +224,10 @@ var editTask = function(taskId) {
   //include the tasks id # when we move the task to be edited, so it can be
   //saved and accessed
   formEl.setAttribute("data-task-id", taskId);
-  }
+}
 
-  //edit task function
+
+//edit task function
 var completeEditTask = function(taskName, taskType, taskId) {
   //find the matching task list item
   var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
@@ -247,13 +242,14 @@ var completeEditTask = function(taskName, taskType, taskId) {
       tasks[i].type === taskType;
     }
   }
-
   //alert person
   window.alert("Task Updated!");
   //reset the form, change button text back to normal
   formEl.removeAttribute("data-task-id");
   document.querySelector("#save-task").textContent = "Add Task";
+  saveTasks();
 }
+
 
 //all status change functions var container
 var taskStatusChangeHandler = function(event) {
@@ -285,9 +281,14 @@ var taskStatusChangeHandler = function(event) {
       tasks[i].status = statusValue;
     }
   }
+  saveTasks();
 }
 
 
+//function for saving to localStorage
+var saveTasks = function() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
 
 
 //connects to form element HTML (DOM) on form submit
@@ -327,3 +328,8 @@ pageContentEl.addEventListener("change", taskStatusChangeHandler);
   
     - This will keep the same id # but place the new values into the 'tasks' array which we use to save our data 
     to local storage to recall as needed. :*/
+
+/* #2-By selecting a <li> that has a data-task-id equal to the taskId passed in deleteTask function,
+ (which will equal the button that was clicked, because of our "if" statement)
+  this sets the var taskId =  to the .delete-btn that was clicked 
+  or the "event.target.matches" (this will also be true for the editTask function) :*/

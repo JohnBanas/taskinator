@@ -15,7 +15,6 @@ var tasksCompletedEl = document.querySelector("#tasks-completed");
 var tasks = [];
 
 
-
 //A function container to hold input data and selection choice for new tasks.
 //If either is left empty sends alert. Also resets form fields after each new task is created.
 //places info in object taskDataObject and sends to createTaskEl
@@ -55,7 +54,6 @@ var taskFormHandler = function(event){
   createTaskEl(taskDataObj);
   }
 }
-
 
 
 //variable container to create new tasks
@@ -188,7 +186,7 @@ var taskButtonHandler = function(event) {
 //variable for function of deleting a created task
 var deleteTask = function(taskId) {
   //if the clicked button is a delete button the 
-  //taskId = that buttons "data-task-id" which also is the <li> id # as well (see side note #2)
+  //taskId = that buttons "data-task-id" which also is the <li> id # as well 
   var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
   //actual command to remove the task
   taskSelected.remove();
@@ -235,7 +233,7 @@ var completeEditTask = function(taskName, taskType, taskId) {
   taskSelected.querySelector("h3.task-name").textContent = taskName;
   taskSelected.querySelector("span.task-type").textContent = taskType;
   //for tasks array holding objects, loop through array and as task object is edited 
-  //replace the old info(.id, .name, .type) with the new edited info. (side note #1 at page bottom)
+  //replace the old info(.id, .name, .type) with the new edited info. 
   for (var i = 0; i < tasks.length; i++) {
     if (tasks[i].id === parseInt(taskId)) {
       tasks[i].name === taskName;
@@ -290,6 +288,61 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
+//get task items from localStorage --done--
+//convert task from string into array of objects --done--
+//iterate through tasks array objects and create task elements on the page
+var loadTasks = function() {
+  //retrieve tasks array from localStorage
+  //retrieve the array and turn back into array objects with JSON.parse()
+  //this created an error at first when written as
+  // tasks = JSON.parse(tasks); even though it had already been called ? 
+  // solution: had to move this to top of function and combine
+  //with localStorage code then everything worked correctly
+   tasks = JSON.parse(localStorage.getItem("tasks"));
+  
+  //if nothing, set it to empty array
+  if (tasks === null) {
+    tasks = [];
+    return false;
+  }
+  
+  //for loop to iterate through each array object from localStorage
+  for (var i = 0; i < tasks.length; i++){
+    tasks[i].id = taskIdCounter;
+
+    //list item to hold local storage objects
+    var listItemEL = document.createElement("li");
+    //give <li> class name
+    listItemEL.className = "task-item";
+    //give <li> id and id # of tasks array object 
+    listItemEL.setAttribute("data-task-id", tasks[i].id);
+    
+    //div to objects info
+    var taskInfoEl = document.createElement("div");
+    taskInfoEl.className = "task-info";
+    taskInfoEl.innerHTML = "<h3 class='task-name'>" + tasks[i].name + "</h3><span class='task-type'>" + tasks[i].type + "</span>";
+    listItemEL.appendChild(taskInfoEl);
+
+    //actions for the task and proper column placement
+    var taskActionsEl = createTaskActions(tasks[i].id);
+    listItemEL.appendChild(taskActionsEl);
+     if (tasks[i].status === "to do") {
+       listItemEL.querySelector("select[name='status-change']").selectedIndex = "0";
+       tasksToDoEl.appendChild(listItemEL);
+    } 
+     else if (tasks[i].status === "in progress") {
+      listItemEL.querySelector("select[name='status-change']").selectedIndex = "1";
+      tasksInProgressEl.appendChild(listItemEL);
+    }
+     else if (tasks[i].status === "completed") {
+      listItemEL.querySelector("select[name='status-change']").selectedIndex = "2";
+      tasksCompletedEl.appendChild(listItemEL);
+    }
+    taskIdCounter++;
+    console.log(listItemEL);
+  }
+}
+
 
 //connects to form element HTML (DOM) on form submit
 //runs function 'taskFormHandler' to create new list item and info containers
@@ -301,35 +354,5 @@ pageContentEl.addEventListener("click", taskButtonHandler);
 //changes the status of the tasks (in progress, completed)
 pageContentEl.addEventListener("change", taskStatusChangeHandler);
 
+loadTasks();
 
-
-/* SIDE NOTES:*/
-    
-/* #1- How does this update the data? 
-    - Well first off we placed the for loop within the completeEditTask function.
-    This already had the three values we need within it's function(argument) of 
-    taskName, taskType, taskId. As this function is only called when someone is editing, the for loop 
-    within would also only exist within that function being called. When it is called, it first will go 
-    through every object within the 'tasks' array as long as that object position number is less than the array length.
-    this is the function of: var i = 0; (starting position of the 1st array item) 
-    then: i < tasks.length; (number of array items in tasks array)
-    then we go to the next item in the list if we are still less than total array item position numbers: 
-    i++ (the last list item plus one position). 
-  
-    -Secondly we place if statement with the (tasks[i].id === parseInt(taskId)
-    this says if we are editing a task array item, whose id is matching to the taskId argument we passed
-    in completeEditTask, then move to the function inside the if statement. Also before we move on, the taskId
-    has the parseInt() function wrapped around it, because the argument is returned as a string, and we need to 
-    compare a number(task[i].id) to a number(parseInt(taskId)). Once the if statement is true, (we are editing and the 
-    two numbers are exactly the same) take the new edited name(taskName) and make it the new taskName for that object in 
-    the 'tasks' array: tasks[i].name = taskName; 
-  
-    - Lastly it is the same process for the taskType.
-  
-    - This will keep the same id # but place the new values into the 'tasks' array which we use to save our data 
-    to local storage to recall as needed. :*/
-
-/* #2-By selecting a <li> that has a data-task-id equal to the taskId passed in deleteTask function,
- (which will equal the button that was clicked, because of our "if" statement)
-  this sets the var taskId =  to the .delete-btn that was clicked 
-  or the "event.target.matches" (this will also be true for the editTask function) :*/

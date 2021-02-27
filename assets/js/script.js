@@ -11,6 +11,8 @@ var pageContentEl = document.querySelector("#page-content");
 var tasksInProgressEl = document.querySelector("#tasks-in-progress");
 //variable for tasks completed
 var tasksCompletedEl = document.querySelector("#tasks-completed");
+//variable for an array to hold all the different tasks in an object
+var tasks = [];
 
 
 
@@ -46,10 +48,13 @@ var taskFormHandler = function(event){
   //package data as an object
   var taskDataObj = {
     name: taskNameInput,
-    type: taskTypeInput
+    type: taskTypeInput,
+    status: "todo"
   };
   //send as an argument to createTaskEl 
   createTaskEl(taskDataObj);
+  console.log(taskDataObj);
+  console.log(taskDataObj.status);
   }
 }
 
@@ -74,6 +79,10 @@ var createTaskEl = function(taskDataObj) {
   
   //add taskInfoEl to listItemEl
   listItemEl.appendChild(taskInfoEl);
+
+  //adding taskIdCounter as taskDataObj id then pushing taskDataObj into the task array container
+  taskDataObj.id = taskIdCounter;
+  tasks.push(taskDataObj);
 
   //function for task delete/edit/status
   var taskActionsEl = createTaskActions(taskIdCounter);
@@ -184,6 +193,19 @@ var deleteTask = function(taskId) {
   var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
   //actual command to remove the task
   taskSelected.remove();
+  //create new array to contain updated list of tasks
+  var updatedTaskArray = [];
+
+  //loop through current tasks
+  for (var i = 0; i < tasks.length; i++) {
+    //if tasks[i] doesn't match the value of taskId, let's keep
+    // and push to new array
+    if(tasks[i].id !== parseInt(taskId)) {
+      updatedTaskArray.push(tasks[i]);
+    }
+  }
+  //reassign tasks array to be the dame as updatedTaskArray
+  tasks = updatedTaskArray;
 };
   //by selecting a <li> that has a data-task-id equal to 
   //the taskId passed in deleteTask function (which will equal 
@@ -217,6 +239,15 @@ var completeEditTask = function(taskName, taskType, taskId) {
   //set new values
   taskSelected.querySelector("h3.task-name").textContent = taskName;
   taskSelected.querySelector("span.task-type").textContent = taskType;
+  //for tasks array holding objects, loop through array and as task object is edited 
+  //replace the old info(.id, .name, .type) with the new edited info. (side note #1 at page bottom)
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === parseInt(taskId)) {
+      tasks[i].name === taskName;
+      tasks[i].type === taskType;
+    }
+  }
+
   //alert person
   window.alert("Task Updated!");
   //reset the form, change button text back to normal
@@ -248,6 +279,12 @@ var taskStatusChangeHandler = function(event) {
   else if (statusValue === "completed") {
     tasksCompletedEl.appendChild(taskSelected);
   }
+  //update task's in tasks array (similar to side note #1)
+  for (var i = 0; i < tasks.length; i++) {
+    if(tasks[i].id === parseInt(taskId)) {
+      tasks[i].status = statusValue;
+    }
+  }
 }
 
 
@@ -263,3 +300,30 @@ pageContentEl.addEventListener("click", taskButtonHandler);
 //changes the status of the tasks (in progress, completed)
 pageContentEl.addEventListener("change", taskStatusChangeHandler);
 
+
+
+/* SIDE NOTES:*/
+    
+/* #1- How does this update the data? 
+    - Well first off we placed the for loop within the completeEditTask function.
+    This already had the three values we need within it's function(argument) of 
+    taskName, taskType, taskId. As this function is only called when someone is editing, the for loop 
+    within would also only exist within that function being called. When it is called, it first will go 
+    through every object within the 'tasks' array as long as that object position number is less than the array length.
+    this is the function of: var i = 0; (starting position of the 1st array item) 
+    then: i < tasks.length; (number of array items in tasks array)
+    then we go to the next item in the list if we are still less than total array item position numbers: 
+    i++ (the last list item plus one position). 
+  
+    -Secondly we place if statement with the (tasks[i].id === parseInt(taskId)
+    this says if we are editing a task array item, whose id is matching to the taskId argument we passed
+    in completeEditTask, then move to the function inside the if statement. Also before we move on, the taskId
+    has the parseInt() function wrapped around it, because the argument is returned as a string, and we need to 
+    compare a number(task[i].id) to a number(parseInt(taskId)). Once the if statement is true, (we are editing and the 
+    two numbers are exactly the same) take the new edited name(taskName) and make it the new taskName for that object in 
+    the 'tasks' array: tasks[i].name = taskName; 
+  
+    - Lastly it is the same process for the taskType.
+  
+    - This will keep the same id # but place the new values into the 'tasks' array which we use to save our data 
+    to local storage to recall as needed. :*/

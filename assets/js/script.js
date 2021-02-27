@@ -7,6 +7,12 @@ var tasksToDoEl = document.querySelector("#tasks-to-do");
 //creates a variable container for an addEventListener so that I can then specify 
 //(!!using the taskIdCounter id # on new tasks created!!) when a edit or delete button is clicked
 var pageContentEl = document.querySelector("#page-content");
+//variable for tasks in progress
+var tasksInProgressEl = document.querySelector("#tasks-in-progress");
+//variable for tasks completed
+var tasksCompletedEl = document.querySelector("#tasks-completed");
+
+
 
 //A function container to hold input data and selection choice for new tasks.
 //If either is left empty sends alert. Also resets form fields after each new task is created.
@@ -27,14 +33,27 @@ var taskFormHandler = function(event){
   //if both are filled out move on and reset form as well
   formEl.reset();
   
+  //check to see if form can use the same form handler for new and old tasks
+  var isEdit = formEl.hasAttribute("data-task-id");
+  //has data attribute, so get task id and call function to complete
+  //edit process
+  if (isEdit) {
+    var taskId = formEl.getAttribute("data-task-id");
+    completeEditTask(taskNameInput, taskTypeInput, taskId);
+  }
+  //no data attribute, so create object as normal and pass to createTaskEl function
+  else {
   //package data as an object
   var taskDataObj = {
     name: taskNameInput,
     type: taskTypeInput
   };
-  //send as an argument to createTaskEl
+  //send as an argument to createTaskEl 
   createTaskEl(taskDataObj);
+  }
 }
+
+
 
 //variable container to create new tasks
 var createTaskEl = function(taskDataObj) {
@@ -68,9 +87,7 @@ var createTaskEl = function(taskDataObj) {
   //increase task counter for the next unique id
   taskIdCounter++;
 }
-//connects to form element HTML (DOM) on form submit
-//runs function 'taskFormHandler' to create new list item and info containers
-formEl.addEventListener("submit", taskFormHandler);
+
 
 //creates buttons on new tasks and places them in
 //div while creating the same taskId as the new task by
@@ -135,6 +152,8 @@ var createTaskActions = function(taskId) {
     //appended in
   return actionContainerEl;
 }
+
+
 //this variable identifies the specific 'delete' buttons we created in actionContainerEl
 var taskButtonHandler = function(event) {
   //get target element from event (what button is clicked and what can we contain that info in
@@ -147,7 +166,6 @@ var taskButtonHandler = function(event) {
     //pass argument of the specific task id # to specify which edit button
     editTask(taskId);
   }
-
   //create true value for 'delete buttons' on 'task add' function
    else if (targetEl.matches(".delete-btn")) {
     //get element task id to target specific delete button as there will be several tasks,
@@ -157,6 +175,8 @@ var taskButtonHandler = function(event) {
     deleteTask(taskId);
   }
 };
+
+
 //variable for function of deleting a created task
 var deleteTask = function(taskId) {
   //if the clicked button is a delete button the 
@@ -170,6 +190,8 @@ var deleteTask = function(taskId) {
   //the button that was clicked, because of our "if" statement)
   //this sets the var taskId =  to the .delete-btn that was clicked 
   //or the "event.target.matches" (this will also be true for the editTask function)
+
+
 
 var editTask = function(taskId) {
   //get task list element
@@ -188,10 +210,56 @@ var editTask = function(taskId) {
   formEl.setAttribute("data-task-id", taskId);
   }
 
+  //edit task function
+var completeEditTask = function(taskName, taskType, taskId) {
+  //find the matching task list item
+  var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+  //set new values
+  taskSelected.querySelector("h3.task-name").textContent = taskName;
+  taskSelected.querySelector("span.task-type").textContent = taskType;
+  //alert person
+  window.alert("Task Updated!");
+  //reset the form, change button text back to normal
+  formEl.removeAttribute("data-task-id");
+  document.querySelector("#save-task").textContent = "Add Task";
+}
+
+//all status change functions var container
+var taskStatusChangeHandler = function(event) {
+  //get the task item's id
+  var taskId = event.target.getAttribute("data-task-id");
+
+  //get currently selected option's value and convert to lowercase
+  var statusValue = event.target.value.toLowerCase();
+
+  //find the parent task item element based on the id 
+  var taskSelected = document.querySelector(".task-item[data-task-id='" + taskId + "']");
+
+  //if status selected is "to do" then append the task (taskSelected) to taskToDoEl
+  //this places it in the <ul> with the id="tasks-to-do" 
+  if (statusValue === "to do") {
+    tasksToDoEl.appendChild(taskSelected);
+  } 
+  //same as "to do" status if statement, except for "in progress" placement
+  else if (statusValue === "in progress") {
+    tasksInProgressEl.appendChild(taskSelected);
+  }
+  //again for "completed" status value
+  else if (statusValue === "completed") {
+    tasksCompletedEl.appendChild(taskSelected);
+  }
+}
 
 
 
+
+//connects to form element HTML (DOM) on form submit
+//runs function 'taskFormHandler' to create new list item and info containers
+formEl.addEventListener("submit", taskFormHandler);
+
+//when clicking either button (edit/delete) calls their function
 pageContentEl.addEventListener("click", taskButtonHandler);
 
-
+//changes the status of the tasks (in progress, completed)
+pageContentEl.addEventListener("change", taskStatusChangeHandler);
 

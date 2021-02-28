@@ -92,6 +92,8 @@ var createTaskEl = function(taskDataObj) {
   //increase task counter for the next unique id
   taskIdCounter++;
   saveTasks();
+
+
 }
 
 
@@ -134,7 +136,7 @@ var createTaskActions = function(taskId) {
   var statusSelectEl = document.createElement("select");
   //select element class
   statusSelectEl.className = "select-status";
-  //select element and give it possible attribute inputs and id reference #
+  //select element and give it attribute inputs and id reference #
   statusSelectEl.setAttribute("name","status-change");
   statusSelectEl.setAttribute("data-task-id", taskId);
 
@@ -153,6 +155,8 @@ var createTaskActions = function(taskId) {
 
       //append options element to select
       statusSelectEl.appendChild(statusOptionEl);
+      actionContainerEl.appendChild(statusSelectEl);
+      console.log(actionContainerEl);
     }
     //returns div with all previous buttons/select/option elements 
     //appended in
@@ -292,54 +296,16 @@ var saveTasks = function() {
 //convert task from string into array of objects --done--
 //iterate through tasks array objects and create task elements on the page
 var loadTasks = function() {
-  //retrieve tasks array from localStorage
-  //retrieve the array and turn back into array objects with JSON.parse()
-  //this created an error at first when written as
-  // tasks = JSON.parse(tasks); even though it had already been called ? 
-  // solution: had to move this to top of function and combine
-  //with localStorage code then everything worked correctly
-   tasks = JSON.parse(localStorage.getItem("tasks"));
+   var savedTasks = localStorage.getItem("tasks");
   
-  //if nothing, set it to empty array
-  if (tasks === null) {
-    tasks = [];
+   if (!savedTasks) {
     return false;
   }
-  
-  //for loop to iterate through each array object from localStorage
-  for (var i = 0; i < tasks.length; i++){
-    tasks[i].id = taskIdCounter;
-
-    //list item to hold local storage objects
-    var listItemEL = document.createElement("li");
-    //give <li> class name
-    listItemEL.className = "task-item";
-    //give <li> id and id # of tasks array object 
-    listItemEL.setAttribute("data-task-id", tasks[i].id);
-    
-    //div to objects info
-    var taskInfoEl = document.createElement("div");
-    taskInfoEl.className = "task-info";
-    taskInfoEl.innerHTML = "<h3 class='task-name'>" + tasks[i].name + "</h3><span class='task-type'>" + tasks[i].type + "</span>";
-    listItemEL.appendChild(taskInfoEl);
-
-    //actions for the task and proper column placement
-    var taskActionsEl = createTaskActions(tasks[i].id);
-    listItemEL.appendChild(taskActionsEl);
-     if (tasks[i].status === "to do") {
-       listItemEL.querySelector("select[name='status-change']").selectedIndex = "0";
-       tasksToDoEl.appendChild(listItemEL);
-    } 
-     else if (tasks[i].status === "in progress") {
-      listItemEL.querySelector("select[name='status-change']").selectedIndex = "1";
-      tasksInProgressEl.appendChild(listItemEL);
-    }
-     else if (tasks[i].status === "completed") {
-      listItemEL.querySelector("select[name='status-change']").selectedIndex = "2";
-      tasksCompletedEl.appendChild(listItemEL);
-    }
-    taskIdCounter++;
-    console.log(listItemEL);
+  savedTasks = JSON.parse(savedTasks);
+//loop through savedTasks array
+  for (var i = 0; i < savedTasks.length; i++) {
+    //pass each object into 'createTaskEl()' function
+    createTaskEl(savedTasks[i]);
   }
 }
 

@@ -85,6 +85,9 @@ var createTaskEl = function(taskDataObj) {
   //add to each task item created
   listItemEl.appendChild(taskActionsEl);
 
+  //add entire list item to list
+  tasksToDoEl.appendChild(listItemEl);
+
   //statement to save new status of tasks
   switch(taskDataObj.status) {
     case "to do":
